@@ -6,5 +6,5 @@ package io.github.celikfatih.constants;
  */
 
 public class Constants {
-    public static final String GET_USER_URL = "/user-service/get-user";
+    public static final String GET_USER_URL = "/user-service/authentication/get-user";
 }
