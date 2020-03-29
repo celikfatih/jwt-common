@@ -1,6 +1,5 @@
 package io.github.celikfatih.util;
 
-import io.github.celikfatih.client.UserServiceClient;
 import io.github.celikfatih.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -15,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
+import java.util.Date;
 import java.util.function.Function;
 
 /**
@@ -26,15 +26,14 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private final JwtProperties jwtProperties;
-    private final UserServiceClient userServiceClient;
 
-    public JwtUtils(JwtProperties jwtProperties, UserServiceClient userServiceClient) {
+    public JwtUtils(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        this.userServiceClient = userServiceClient;
     }
 
-    public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userServiceClient.getUser(extractUsername(token));
+    public Authentication getAuthentication(String token, Function<String, UserDetails> userDetailsFunction) {
+        String username = extractUsername(token);
+        UserDetails userDetails = userDetailsFunction.apply(username);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
@@ -42,14 +41,27 @@ public class JwtUtils {
         return request.getHeader(jwtProperties.getHeader());
     }
 
-    public String getTokenWithoutBearer(HttpServletRequest request) {
+    public String resolveToken(HttpServletRequest request) {
         return StringUtils.isEmpty(getToken(request)) ? null : getToken(request).substring(7);
     }
 
-    public String extractUsername(String token) {
+    private String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public boolean verifyToken(String token) {
+        try {
+            Date expiration = extractExpiration(token);
+            return !expiration.before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -63,5 +75,7 @@ public class JwtUtils {
         byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(jwtProperties.getSecretKey());
         return new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
     }
+
+
 
 }
