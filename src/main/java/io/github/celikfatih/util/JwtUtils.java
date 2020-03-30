@@ -14,7 +14,9 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -74,6 +76,15 @@ public class JwtUtils {
     private Key getSigningKey() {
         byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(jwtProperties.getSecretKey());
         return new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
+    }
+
+    public String createJWTToken(Map<String, Object> claims) {
+        Instant now = Instant.now();
+        return Jwts.builder().setClaims(claims)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(jwtProperties.getExpirationTime())))
+                .signWith(SignatureAlgorithm.HS256, getSigningKey())
+                .compact();
     }
 
 

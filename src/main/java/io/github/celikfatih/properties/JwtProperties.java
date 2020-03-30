@@ -21,7 +21,7 @@ public class JwtProperties {
     private String tokenPrefix;
 
     @Value("${jwt-common.authentication.expiration-time:#{12*60*60}}")
-    private String expirationTime;
+    private int expirationTime;
 
     @Value("${jwt-common.authentication.secret-key:jwt-common-secret-key}")
     private String secretKey;
