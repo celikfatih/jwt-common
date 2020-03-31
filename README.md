@@ -1,4 +1,7 @@
 # jwt-common
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.celikfatih/jwt-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.celikfatih/jwt-common/)
+
 Includes basic configurations of Json Web Token, commonly used for Spring projects.
 Used to perform simple JWT operations. It performs operations such as generating a 
 JWT token, validating the token. It also allows you to manage some of the features 
